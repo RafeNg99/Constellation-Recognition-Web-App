@@ -1,1 +1,6 @@
 # Constellation-Recognition-Web-App
+A constellation is a group of visible stars that forms a particular shape in the night sky, typically representing an animal, mythological subject, or inanimate object. Constellations have served as celestial maps for ocean navigation, celestial calendars to help ancient farmers to keep track of the seasons for planting and harvesting, and storytelling devices for myths and culture. 
+
+In modern times, NASA and scientists still use constellations as celestial navigation to orient themselves in space since they remain relatively unchanged over time, they are reliable tools for navigaation. Astronomers also use constellations to track the motion of stars and galaxies since they serve as markers to observe changes in the Universe. There are 88 officially recognized constellations by the International Astronomical Union (IAU).
+
+The purpose of this web application is to recognize constellations in images and then explain their history, cultural significance, and notable features using Computer Vision and LLM.
