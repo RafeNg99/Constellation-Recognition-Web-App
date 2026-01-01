@@ -1,4 +1,5 @@
 import streamlit as st
+import requests
 import base64
 
 def get_base64(img_path):
