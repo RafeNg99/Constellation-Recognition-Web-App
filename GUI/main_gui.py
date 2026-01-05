@@ -73,8 +73,15 @@ with right_col:
             #     unsafe_allow_html=True,
             # )
 
+            constellation_list = json_result["yolo_class_result"]
+            
+            if len(constellation_list) > 0:
+                response = requests.post("http://127.0.0.1:9002/constellation_explainer", params=constellation_list)
+                result_txt = response.json(["llm_result"])
 
+            else:
+                result_txt = "No constellations found in the image."
 
-            # st.code(result_txt, language="text")
+            st.code(result_txt, language="text")
 
         st.success("Results displayed!")

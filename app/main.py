@@ -19,7 +19,7 @@ class DetectorResponse(BaseModel):
     yolo_class_result: List[str]
 
 class ExplainerResponse(BaseModel):
-    llm_result: List[str]
+    llm_result: str
 
 
 
@@ -69,7 +69,7 @@ def constellation_detector(files: List[UploadFile] = File(...)):
 
 
 @app.post("/constellation_explainer", response_model=ExplainerResponse)
-async def constellation_explainer(params: str = Query(...)):
+async def constellation_explainer(params: List[str] = Query(...)):
     try:
 
 
