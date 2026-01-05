@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  constellation-recognizer-api:
+    build: .
+    container_name: constellation-recognizer 
+    ports:
+      - "9002:9000"
+    # environment:
+      # VLLM_GEMMA_BASE_URL: "http://10.251.4.17:8506/v1/"
+      # VLLM_GEMMA_API_KEY: "EMPTY"
+      # GEMMA_MODEL: "google/gemma-3n-E4B-it"
+    restart: unless-stopped

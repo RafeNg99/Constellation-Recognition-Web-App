@@ -1,6 +1,8 @@
 import streamlit as st
+import io
 import requests
 import base64
+from PIL import Image
 
 def get_base64(img_path):
     with open(img_path, "rb") as img_file:
@@ -34,11 +36,12 @@ with left_col:
 
     if run_btn:
         if uploaded_file is not None:
+            files = [("files", (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type))]
             with st.spinner("Processing image..."):
+                response = requests.post("http://127.0.0.1:9002/constellation_detector", files=files)
 
-
-
-                st.success("Process complete!")
+                if response.status_code == 200:
+                    st.success("Process complete!")
 
         else:
             st.warning("Please upload an image.")
@@ -46,7 +49,32 @@ with left_col:
 
 with right_col:
     if run_btn:
-        # st.image(result_img, caption="")
-        # st.code(result_txt, language="text")
+        if response.status_code == 200:
+            json_result = response.json()
+            img_bytes = base64.b64decode(json_result["yolo_img_result"])
+            img = Image.open(io.BytesIO(img_bytes))
+
+            with st.container(horizontal_alignment='center'):
+                st.image(img, caption="", width=img.width, output_format="PNG")
+
+            # img_base64 = base64.b64encode(img_bytes).decode()
+
+            # st.markdown(
+            #     f"""
+            #     <div style="text-align:center">
+            #         <img src="data:image/png;base64,{img_base64}"
+            #             style="
+            #                 width:640px;
+            #                 image-rendering: crisp-edges;
+            #                 image-rendering: pixelated;
+            #             ">
+            #     </div>
+            #     """,
+            #     unsafe_allow_html=True,
+            # )
+
+
+
+            # st.code(result_txt, language="text")
 
         st.success("Results displayed!")

@@ -16,10 +16,10 @@ app = FastAPI()
 
 class DetectorResponse(BaseModel):
     yolo_img_result: str
-    yolo_class_result: List[str, Any]
+    yolo_class_result: List[str]
 
 class ExplainerResponse(BaseModel):
-    llm_result: List[Any]
+    llm_result: List[str]
 
 
 
@@ -27,10 +27,11 @@ class ExplainerResponse(BaseModel):
 LLM_PROMPT = """
 """
 
-constellation_detectoer_model = YOLO("yolo11-best-model.pt")
+constellation_detectoer_model = YOLO("/app/yolo11-best-model.pt")
 
-def file_to_pil(uploaded_file):
-    img = Image.open(uploaded_file).convert("RGB")
+def file_to_pil(uploaded_file: UploadFile):
+    image_bytes = uploaded_file.file.read()
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     return img
 
 def encoded_img(img: np.array) -> str:
@@ -39,7 +40,7 @@ def encoded_img(img: np.array) -> str:
 
 
 @app.post("/constellation_detector", response_model=DetectorResponse)
-async def constellation_detector(files: List[UploadFile] = File(...)):
+def constellation_detector(files: List[UploadFile] = File(...)):
     try:
         img = file_to_pil(files[0])
         results = constellation_detectoer_model(img)
@@ -53,6 +54,9 @@ async def constellation_detector(files: List[UploadFile] = File(...)):
             class_name_list.append(class_name)
             
         img_result = encoded_img(results[0].plot())
+
+        if img_result is None:
+            raise ValueError("YOLO returned no plot image")
 
         return DetectorResponse(
             yolo_img_result=img_result,
