@@ -72,7 +72,7 @@ Instructions:
    - Notable features
 3. Output must be plain text (no markdown, no emojis, no bullet symbols).
 4. Do NOT invent constellations that are not in the detected list.
-5. Keep the explanation clear, concise, and factual.
+5. Keep the explanation short, clear, concise, and factual.
 6. Write everything strictly in the specified output language.
 """
 
@@ -124,6 +124,7 @@ async def constellation_explainer(const_list: List[str] = Query(...), lang: str 
             "seed": 42
         }
     }
+
     try:
         response = requests.post(URL, json=payload)
         response.raise_for_status()
