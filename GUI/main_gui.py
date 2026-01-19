@@ -85,9 +85,12 @@ with right_col:
 
             constellation_list = json_result["yolo_class_result"]
             
-            response = requests.post("http://127.0.0.1:9002/constellation_explainer", const_list=constellation_list, lang=language)
-            result_txt = response.json(["llm_result"])
-
+            response = requests.post("http://127.0.0.1:9002/constellation_explainer", 
+                                     params={
+                                         "const_list": constellation_list, 
+                                         "lang": language})
+            json_txt = response.json()
+            result_txt = json_txt["llm_result"]
             st.code(result_txt, language="text")
 
         st.success("Results displayed!")

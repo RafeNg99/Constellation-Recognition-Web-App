@@ -34,7 +34,9 @@ class ExplainerResponse(BaseModel):
 # CONFIG
 # =========================
 MODEL_NAME = "qwen3:4b"
-URL = "http://localhost:11434/api/chat"
+# URL = "http://10.88.0.1:11434/api/chat"
+# URL = "http://localhost:11434/api/chat"
+URL = "http://ollama:11434/api/generate"
 
 
 # =========================

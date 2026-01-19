@@ -1,12 +1,37 @@
 version: "3.9"
+
 services:
-  constellation-recognizer-api:
-    build: .
-    container_name: constellation-recognizer 
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: constellation-recognizer-api
     ports:
       - "9002:9000"
-    # environment:
-      # VLLM_GEMMA_BASE_URL: "http://10.251.4.17:8506/v1/"
-      # VLLM_GEMMA_API_KEY: "EMPTY"
-      # GEMMA_MODEL: "google/gemma-3n-E4B-it"
+    depends_on:
+      - ollama
     restart: unless-stopped
+
+  ollama:
+    # 🚨 CRITICAL FIX: CUDA-enabled image
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      # NVIDIA GPU binding
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+      # Ollama GPU enforcement
+      - OLLAMA_NUM_GPU=1
+      - OLLAMA_GPU_OVERHEAD=0
+      - OLLAMA_MAX_LOADED_MODELS=1
+      - OLLAMA_KEEP_ALIVE=24h
+    runtime: nvidia
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
