@@ -63,9 +63,10 @@ with right_col:
             json_result = response.json()
             img_bytes = base64.b64decode(json_result["yolo_img_result"])
             img = Image.open(io.BytesIO(img_bytes))
+            img.thumbnail((640, 640), Image.LANCZOS)
 
             with st.container(horizontal_alignment='center'):
-                st.image(img, caption="", width=img.width, output_format="PNG")
+                st.image(img, caption="", output_format="PNG")
 
             # img_base64 = base64.b64encode(img_bytes).decode()
 
@@ -85,12 +86,29 @@ with right_col:
 
             constellation_list = json_result["yolo_class_result"]
             
-            response = requests.post("http://127.0.0.1:9002/constellation_explainer", 
-                                     params={
-                                         "const_list": constellation_list, 
-                                         "lang": language})
-            json_txt = response.json()
-            result_txt = json_txt["llm_result"]
+            with left_col:
+                with st.spinner("⏳Processing information..."):
+
+                    response = requests.post("http://127.0.0.1:9002/constellation_explainer", 
+                                             params={
+                                                 "const_list": constellation_list if constellation_list else [""],  # can be []
+                                                 "lang": language
+                                                 })
+                    
+                    if response.status_code == 200:
+                        st.success("✅Process complete!")
+                    
+                    else:
+                        result_txt = response.content
+                        st.success("⚠️Error occurred!")
+            
+            if response.status_code == 200:
+                try:
+                    json_txt = response.json()
+                    result_txt = json_txt["llm_result"]
+                except Exception as e:
+                    result_txt = str(e)
+
             st.code(result_txt, language="text")
 
-        st.success("Results displayed!")
+        # st.success("Results displayed!")

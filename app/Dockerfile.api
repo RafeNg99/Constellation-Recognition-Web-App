@@ -5,7 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Environment
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1
 
 # Minimal system dependencies for Pillow & PyMuPDF
 RUN apt-get update && apt-get install -y --no-install-recommends \
