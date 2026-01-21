@@ -36,7 +36,31 @@ class ExplainerResponse(BaseModel):
 MODEL_NAME = "qwen3:4b"
 # URL = "http://10.88.0.1:11434/api/chat"
 # URL = "http://localhost:11434/api/chat"
-URL = "http://ollama:11434/api/generate"
+URL = "http://ollama:11434/v1/chat/completions"
+LLM_PROMPT = """You are an astronomy knowledge assistant.
+
+Input:
+- Detected constellations: <<CONSTELLATION_LIST>>
+- Output language: <<LANGUAGE>>
+
+Instructions:
+1. If the detected constellations list is empty, respond ONLY with:
+   "No constellation found, please upload another image."
+   in the specified output language.
+2. If constellations are present, for EACH constellation provide:
+   - History
+   - Cultural significance
+   - Notable features
+3. Output must be plain text (no markdown, no emojis, no bullet symbols).
+4. Do NOT invent constellations that are not in the detected list.
+5. Keep the explanation short, clear, and factual, around 2–3 sentences per section.
+6. For each constellation, show its name in English first, followed by the specified language. Use this exact format:
+
+Constellation Name in English / Constellation Name in <<LANGUAGE>>
+History: ...
+Cultural Significance: ...
+Notable Features: ...
+"""
 
 
 # =========================
@@ -56,29 +80,6 @@ def file_to_pil(uploaded_file: UploadFile):
 def encoded_img(img: np.array) -> str:
     _, buffer = cv2.imencode(".jpg", img)
     return base64.b64encode(buffer).decode("utf-8")
-
-def llm_prompt(constellation_list, language):
-    LLM_PROMPT = f"""You are an astronomy knowledge assistant.
-
-Input:
-- Detected constellations: {constellation_list}
-- Output language: {language}
-
-Instructions:
-1. If the detected constellations list is empty, respond ONLY with:
-   "No constellation found, please upload another image."
-   in the specified output language.
-2. If constellations are present, for EACH constellation provide:
-   - History
-   - Cultural significance
-   - Notable features
-3. Output must be plain text (no markdown, no emojis, no bullet symbols).
-4. Do NOT invent constellations that are not in the detected list.
-5. Keep the explanation short, clear, concise, and factual.
-6. Write everything strictly in the specified output language.
-"""
-
-    return LLM_PROMPT
 
 
 # =========================
@@ -114,23 +115,26 @@ def constellation_detector(files: List[UploadFile] = File(...)):
 
 @app.post("/constellation_explainer", response_model=ExplainerResponse)
 async def constellation_explainer(const_list: List[str] = Query(...), lang: str = Query(...)):
-    QWEN_PROMPT = llm_prompt(const_list, lang)
+    QWEN_PROMPT = (LLM_PROMPT.replace("<<CONSTELLATION_LIST>>", str(const_list)).replace("<<LANGUAGE>>", lang))
+    
     payload = {
-        "model": MODEL_NAME,
-        "prompt": QWEN_PROMPT,
-        "stream": False,
-        "options": {
-            "temperature": 0.2,
-            "top_p": 0.4,
-            "top_k": 40,
-            "seed": 42
-        }
+        "model": MODEL_NAME,  # must match the model you pulled
+        "messages": [
+            {
+                "role": "user", 
+                "content": QWEN_PROMPT
+            }
+        ],
+        "temperature": 0.2,
+        "top_p": 0.4,
+        "top_k": 40,
+        "seed": 42,
     }
 
     try:
         response = requests.post(URL, json=payload)
         response.raise_for_status()
-        result = response.json()["response"]
+        result = response.json()["choices"][0]["message"]["content"]
 
         return ExplainerResponse(
             llm_result=result
