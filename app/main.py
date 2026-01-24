@@ -44,18 +44,29 @@ Input:
 - Output language: <<LANGUAGE>>
 
 Instructions:
-1. If the detected constellations list is empty, respond ONLY with:
+1. ONLY if the detected constellations list is truly empty, respond ONLY with:
    "No constellation found, please upload another image."
-   in the specified output language.
-2. If constellations are present, for EACH constellation provide:
+   translated into the specified output language.
+2. If the list is NOT empty, always generate information for the provided items, even if the image contains only the Moon.
+3. For EACH detected constellation, provide:
    - History
    - Cultural significance
    - Notable features
-3. Output must be plain text (no markdown, no emojis, no bullet symbols).
-4. Do NOT invent constellations that are not in the detected list.
-5. Keep the explanation short, clear, and factual, around 2–3 sentences per section.
-6. For each constellation, show its name in English first, followed by the specified language. Use this exact format:
+   Each section should be 2–3 short, clear, factual sentences.
+4. Output must be plain text only (no markdown, no emojis, no bullet symbols).
+5. Do NOT invent or infer constellations beyond those explicitly listed.
+6. Language rules:
+   - If the output language is English, show ONLY the English constellation name.
+   - If the output language is NOT English, show the name in English first, followed by the specified language.
+7. Use the following format exactly:
 
+If LANGUAGE is English:
+Constellation Name
+History: ...
+Cultural Significance: ...
+Notable Features: ...
+
+If LANGUAGE is not English:
 Constellation Name in English / Constellation Name in <<LANGUAGE>>
 History: ...
 Cultural Significance: ...
@@ -89,7 +100,7 @@ def encoded_img(img: np.array) -> str:
 def constellation_detector(files: List[UploadFile] = File(...)):
     try:
         img = file_to_pil(files[0])
-        results = constellation_detectoer_model(img)
+        results = constellation_detectoer_model.predict(img, imgsz=640, conf=0.4)
 
         class_name_list = []
 
@@ -142,8 +153,5 @@ async def constellation_explainer(const_list: List[str] = Query(...), lang: str 
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 
-
-
-
 
 
