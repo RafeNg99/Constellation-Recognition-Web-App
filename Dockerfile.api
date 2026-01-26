@@ -20,14 +20,14 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY main.py .
+# Copy application package
+COPY app ./app
 
 # Copy YOLO model weights
-COPY yolo11-best-model.pt /app/yolo11-best-model.pt
+COPY app/yolo11-best-model.pt /app/yolo11-best-model.pt
 
 # Expose port (documentation only)
 EXPOSE 9000
 
 # Run the app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000", "--timeout-keep-alive", "300"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9000", "--timeout-keep-alive", "300"]

@@ -7,6 +7,8 @@ import requests
 import numpy as np
 from ultralytics import YOLO
 from typing import List, Optional, Dict, Any
+from app.config import URL, MODEL_NAME
+from app.prompt import LLM_PROMPT
 
 from fastapi import FastAPI, File, UploadFile, Query, HTTPException
 from pydantic import BaseModel
@@ -33,45 +35,45 @@ class ExplainerResponse(BaseModel):
 # =========================
 # CONFIG
 # =========================
-MODEL_NAME = "qwen3:4b"
+# MODEL_NAME = "qwen3:4b"
 # URL = "http://10.88.0.1:11434/api/chat"
 # URL = "http://localhost:11434/api/chat"
-URL = "http://ollama:11434/v1/chat/completions"
-LLM_PROMPT = """You are an astronomy knowledge assistant.
+# URL = "http://ollama:11434/v1/chat/completions"
+# LLM_PROMPT = """You are an astronomy knowledge assistant.
 
-Input:
-- Detected constellations: <<CONSTELLATION_LIST>>
-- Output language: <<LANGUAGE>>
+# Input:
+# - Detected constellations: <<CONSTELLATION_LIST>>
+# - Output language: <<LANGUAGE>>
 
-Instructions:
-1. ONLY if the detected constellations list is truly empty, respond ONLY with:
-   "No constellation found, please upload another image."
-   translated into the specified output language.
-2. If the list is NOT empty, always generate information for the provided items, even if the image contains only the Moon.
-3. For EACH detected constellation, provide:
-   - History
-   - Cultural significance
-   - Notable features
-   Each section should be 2–3 short, clear, factual sentences.
-4. Output must be plain text only (no markdown, no emojis, no bullet symbols).
-5. Do NOT invent or infer constellations beyond those explicitly listed.
-6. Language rules:
-   - If the output language is English, show ONLY the English constellation name.
-   - If the output language is NOT English, show the name in English first, followed by the specified language.
-7. Use the following format exactly:
+# Instructions:
+# 1. ONLY if the detected constellations list is truly empty, respond ONLY with:
+#    "No constellation found, please upload another image."
+#    translated into the specified output language.
+# 2. If the list is NOT empty, always generate information for the provided items, even if the image contains only the Moon.
+# 3. For EACH detected constellation, provide:
+#    - History
+#    - Cultural significance
+#    - Notable features
+#    Each section should be 2–3 short, clear, factual sentences.
+# 4. Output must be plain text only (no markdown, no emojis, no bullet symbols).
+# 5. Do NOT invent or infer constellations beyond those explicitly listed.
+# 6. Language rules:
+#    - If the output language is English, show ONLY the English constellation name.
+#    - If the output language is NOT English, show the name in English first, followed by the specified language.
+# 7. Use the following format exactly:
 
-If LANGUAGE is English:
-Constellation Name
-History: ...
-Cultural Significance: ...
-Notable Features: ...
+# If LANGUAGE is English:
+# Constellation Name
+# History: ...
+# Cultural Significance: ...
+# Notable Features: ...
 
-If LANGUAGE is not English:
-Constellation Name in English / Constellation Name in <<LANGUAGE>>
-History: ...
-Cultural Significance: ...
-Notable Features: ...
-"""
+# If LANGUAGE is not English:
+# Constellation Name in English / Constellation Name in <<LANGUAGE>>
+# History: ...
+# Cultural Significance: ...
+# Notable Features: ...
+# """
 
 
 # =========================
@@ -136,6 +138,7 @@ async def constellation_explainer(const_list: List[str] = Query(...), lang: str 
                 "content": QWEN_PROMPT
             }
         ],
+        "stream": False,
         "temperature": 0.2,
         "top_p": 0.4,
         "top_k": 40,
@@ -145,7 +148,7 @@ async def constellation_explainer(const_list: List[str] = Query(...), lang: str 
     try:
         response = requests.post(URL, json=payload)
         response.raise_for_status()
-        result = response.json()["choices"][0]["message"]["content"]
+        result = response.json()["message"]["content"]
 
         return ExplainerResponse(
             llm_result=result
