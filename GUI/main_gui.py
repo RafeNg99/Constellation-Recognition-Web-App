@@ -68,22 +68,6 @@ with right_col:
             with st.container(horizontal_alignment='center'):
                 st.image(img, caption="", output_format="PNG")
 
-            # img_base64 = base64.b64encode(img_bytes).decode()
-
-            # st.markdown(
-            #     f"""
-            #     <div style="text-align:center">
-            #         <img src="data:image/png;base64,{img_base64}"
-            #             style="
-            #                 width:640px;
-            #                 image-rendering: crisp-edges;
-            #                 image-rendering: pixelated;
-            #             ">
-            #     </div>
-            #     """,
-            #     unsafe_allow_html=True,
-            # )
-
             constellation_list = json_result["yolo_class_result"]
             
             with left_col:
@@ -110,5 +94,3 @@ with right_col:
                     result_txt = str(e)
 
             st.code(result_txt, language="text")
-
-        # st.success("Results displayed!")
