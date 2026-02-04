@@ -3,4 +3,4 @@ A constellation is a group of visible stars that forms a particular shape in the
 
 In modern times, NASA and scientists still use constellations as celestial navigation to orient themselves in space since they remain relatively unchanged over time, they are reliable tools for navigaation. Astronomers also use constellations to track the motion of stars and galaxies since they serve as markers to observe changes in the Universe. There are 88 officially recognized constellations by the International Astronomical Union (IAU).
 
-The purpose of this web application is to recognize constellations in images and then explain their history, cultural significance, and notable features using Computer Vision and LLM.
+The purpose of this web application is to recognize constellations in images and then explain their history, cultural significance, and notable features in multiple languages such as English, Chinese, Japanese, Korean, and Malay depending on user's selection using Computer Vision for constellation detection and LLM for explanation.
