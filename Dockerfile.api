@@ -26,6 +26,9 @@ COPY app ./app
 # Copy YOLO model weights
 COPY app/yolo11-best-model.pt /app/yolo11-best-model.pt
 
+# Create logs directory and set permissions
+RUN mkdir -p /app/logs && chmod 777 /app/logs
+
 # Expose port (documentation only)
 EXPOSE 9000
 

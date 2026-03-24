@@ -9,6 +9,7 @@ from ultralytics import YOLO
 from typing import List, Optional, Dict, Any
 from app.config import URL, MODEL_NAME
 from app.prompt import LLM_PROMPT
+from app.logger import get_logger
 
 from fastapi import FastAPI, File, UploadFile, Query, HTTPException
 from pydantic import BaseModel
@@ -56,6 +57,7 @@ def encoded_img(img: np.array) -> str:
 # =========================
 @app.post("/constellation_detector", response_model=DetectorResponse)
 def constellation_detector(files: List[UploadFile] = File(...)):
+    result_logger = get_logger()
     try:
         img = file_to_pil(files[0])
         results = constellation_detectoer_model.predict(img, imgsz=640, conf=0.4)
@@ -67,11 +69,15 @@ def constellation_detector(files: List[UploadFile] = File(...)):
             class_id = int(box.cls[0])
             class_name = constellation_detectoer_model.names[class_id]
             class_name_list.append(class_name)
+
+        result_logger.log_info(f"Filename: {files[0].filename}")
+        result_logger.log_info(f"Detected Constellations: {class_name_list}")
             
         img_result = encoded_img(results[0].plot())
 
         if img_result is None:
-            raise ValueError("YOLO returned no plot image")
+            result_logger.log_error("ValueError: YOLO returned no plot image")
+            raise ValueError("YOLO returned no plot image\n\n" + "-" * 100 + "\n")
 
         return DetectorResponse(
             yolo_img_result=img_result,
@@ -79,11 +85,13 @@ def constellation_detector(files: List[UploadFile] = File(...)):
         )
 
     except Exception as e:
+        result_logger.log_error(f"HTTPException 500: {e}\n\n" + "-" * 100 + "\n")
         raise HTTPException(status_code=500, detail=str(e)) 
 
 
 @app.post("/constellation_explainer", response_model=ExplainerResponse)
 async def constellation_explainer(const_list: List[str] = Query(...), lang: str = Query(...)):
+    result_logger = get_logger()
     QWEN_PROMPT = (LLM_PROMPT.replace("<<CONSTELLATION_LIST>>", str(const_list)).replace("<<LANGUAGE>>", lang))
     
     payload = {
@@ -106,11 +114,15 @@ async def constellation_explainer(const_list: List[str] = Query(...), lang: str 
         response.raise_for_status()
         result = response.json()["message"]["content"]
 
+        result_logger.log_info(f"Langauge: {lang}")
+        result_logger.log_info(f"LLM Result: {result}\n\n" + "-" * 100 + "\n")
+
         return ExplainerResponse(
             llm_result=result
         )
 
     except Exception as e:
+        result_logger.log_error(f"HTTPException 500: {e}\n\n" + "-" * 100 + "\n")
         raise HTTPException(status_code=500, detail=str(e)) 
 
 
